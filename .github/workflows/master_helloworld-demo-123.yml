@@ -37,8 +37,6 @@ jobs:
   deploy-staging:
     runs-on: windows-latest
     needs: build
-    environment:
-      name: 'Staging'
     permissions:
       id-token: write
 
@@ -51,9 +49,11 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
+          auth-type: sp
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_10127C0438E940C5AF72D809EC856C4A }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_F74474E9BE7E48CEB9F2BD42A3E8DDA2 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_DC1E64DDE47F4068B38D1FFC40735053 }}
+
 
       - name: Deploy to Azure Web App (Staging Slot)
         id: deploy-to-webapp-staging
