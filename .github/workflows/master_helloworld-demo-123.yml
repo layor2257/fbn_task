@@ -1,10 +1,10 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
 name: Build and deploy ASP app to Azure Web App - helloworld-demo-123
 
 on:
   push:
+    branches:
+      - master
+  pull_request:
     branches:
       - master
   workflow_dispatch:
@@ -34,14 +34,13 @@ jobs:
           name: ASP-app
           path: '/published/**'
 
-  deploy:
+  deploy-staging:
     runs-on: windows-latest
     needs: build
     environment:
-      name: 'Production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+      name: 'Staging'
     permissions:
-      id-token: write #This is required for requesting the JWT
+      id-token: write
 
     steps:
       - name: Download artifact from build job
@@ -56,8 +55,38 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_F74474E9BE7E48CEB9F2BD42A3E8DDA2 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_DC1E64DDE47F4068B38D1FFC40735053 }}
 
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
+      - name: Deploy to Azure Web App (Staging Slot)
+        id: deploy-to-webapp-staging
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'helloworld-demo-123'
+          slot-name: 'staging'
+          package: .
+
+  deploy-production:
+    runs-on: windows-latest
+    needs: build
+    environment:
+      name: 'Production'
+      url: ${{ steps.deploy-to-webapp-production.outputs.webapp-url }}
+    permissions:
+      id-token: write 
+
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: ASP-app
+      
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_10127C0438E940C5AF72D809EC856C4A }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_F74474E9BE7E48CEB9F2BD42A3E8DDA2 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_DC1E64DDE47F4068B38D1FFC40735053 }}
+
+      - name: Deploy to Azure Web App (Production Slot)
+        id: deploy-to-webapp-production
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'helloworld-demo-123'
