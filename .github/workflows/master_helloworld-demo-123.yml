@@ -1,4 +1,4 @@
-name: Build and deploy ASP app to Azure Web App - helloworld-demo-123
+name: Build and deploy ASP apps to Azure Web App - helloworld-demo-123
 
 on:
   push:
